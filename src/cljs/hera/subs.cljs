@@ -17,3 +17,8 @@
  :users
  (fn [db]
    (:users db)))
+
+(re-frame/reg-sub
+ :current-page
+ (fn [db]
+   (:current-page db)))

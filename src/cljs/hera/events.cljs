@@ -25,5 +25,12 @@
  :logout
  (fn [db]
    (prn db)
-   (assoc db :current-user "no")
-   (assoc db :current-user nil)))
+   (assoc db
+          :current-user nil
+          :current-page :login)))
+
+
+(re-frame/reg-event-db
+ :update-page
+ (fn  [db [_ page]]
+   (assoc db :current-page page)))

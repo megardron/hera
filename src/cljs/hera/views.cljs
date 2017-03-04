@@ -8,22 +8,23 @@
     [:option {:key user :selected true} user]
     [:option {:key user} user]))
 
-(defn other-panel []
+(defn landing-page []
   (let [current-user (re-frame/subscribe [:current-user])
         bills (re-frame/subscribe [:bills])
         users (re-frame/subscribe [:users])]
     (prn "why")
-    (when @current-user
-      (fn []
-        [:div
-         [:div "Hello, " @current-user " you have " (count @bills) " bills in the system."]
-         [:button {:on-click #(prn %)
-                   :type "button"}
-          "Add bills" ]
-         [:button {:type "button"
-                   :on-click (fn [e] (prn "click logout") (re-frame/dispatch [:logout ":("]))}
-          "Logout"]]))))
+    [:div
+     [:div "Hello, " @current-user " you have " (count @bills) " bills in the system."]
+     [:button {:on-click #(re-frame/dispatch-sync [:update-page :enter-bills])
+               :type "button"}
+      "Add bills" ]
+     [:button {:type "button"
+               :on-click (fn [e] (prn "click logout") (re-frame/dispatch-sync [:logout ":("]))}
+      "Logout"]]))
 
+(defn enter-bills
+  []
+  [:div "lol"])
 
 (defn login
   []
@@ -33,7 +34,7 @@
     "Username"
     [:input {:type "text"
              :name "user"
-             :on-change (fn [e] (re-frame/dispatch [:input (-> e .-currentTarget .-value)]))}]]
+             :on-change (fn [e] (re-frame/dispatch-sync [:input (-> e .-currentTarget .-value)]))}]]
    [:button
     {:on-click (fn [e]
                  (re-frame/dispatch [:login]))}
@@ -41,8 +42,11 @@
 
 (defn main-panel
   []
-  (let [logged-in? (re-frame/subscribe [:current-user])]
-    (prn @logged-in?)
+  (let [logged-in? (re-frame/subscribe [:current-user])
+        page (re-frame/subscribe [:current-page])]
+    (prn @logged-in? @page)
     (if @logged-in?
-      (other-panel)
+      (case @page
+        :enter-bills (enter-bills)
+        :login (landing-page))
       (login))))
