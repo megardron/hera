@@ -1,5 +1,8 @@
 (ns hera.db)
 
 (def default-db
-  {:name "User"
-   :bills []})
+  {:current-user nil
+   :bills []
+   :users ["Nolan"
+           "Megan"
+           "Pallavi"]})
