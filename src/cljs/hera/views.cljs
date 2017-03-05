@@ -24,6 +24,9 @@
      [:button {:on-click #(re-frame/dispatch-sync [:update-page :enter-bills])
                :type "button"}
       "Add bills" ]
+     [:button {:on-click #(re-frame/dispatch-sync [:update-page :view-bills])
+               :type "button"}
+      "View bills" ]
      [:button {:type "button"
                :on-click (fn [e] (prn "configure") (re-frame/dispatch-sync [:update-page :users]))}
       "Configure users"]
@@ -81,6 +84,22 @@
                  (re-frame/dispatch [:login]))}
     "Submit"]])
 
+(defn format-bill
+  [bill]
+  (str (:name bill) (:id bill)))
+
+(defn view-bills
+  []
+  (let [bills (re-frame/subscribe [:bills])]
+    [:div (if (seq @bills)
+            [:ul (map #(conj [:li] (format-bill %)) @bills)]
+            [:div
+             [:div "No bills. Would you like to add one now?"]
+             [:button {:on-click #(re-frame/dispatch-sync [:update-page :enter-bills])
+                       :type "button"}
+              "Add bills" ]])
+     (back-button)]))
+
 (defn error
   []
   [:div
@@ -115,6 +134,7 @@
       (case @page
         :enter-bills (enter-bills)
         :landing-page (landing-page)
+        :view-bills (view-bills)
         :users (users)
         (error))
       (login))))
