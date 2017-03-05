@@ -2,6 +2,11 @@
   (:require [re-frame.core :as re-frame]
             [ajax.core :refer [GET]]))
 
+(defn back-button
+  []
+  [:button {:on-click #(re-frame/dispatch-sync [:update-page :landing-page])
+            :type "button"}
+   "back"])
 
 (defn user-dropdown
   [current user]
@@ -20,37 +25,51 @@
                :type "button"}
       "Add bills" ]
      [:button {:type "button"
+               :on-click (fn [e] (prn "configure") (re-frame/dispatch-sync [:update-page :users]))}
+      "Configure users"]
+     [:button {:type "button"
                :on-click (fn [e] (prn "click logout") (re-frame/dispatch-sync [:logout]))}
       "Logout"]]))
 
+(defn get-by-id
+  [name]
+  (->> name
+       (.getElementById js/document)
+       .-value))
+
 (defn enter-bills
   []
-  [:div
-   [:form
-    [:div "Add Bill"]
-    [:br]
-    [:div "Amount"]
-    [:input {:type "number"
-             :id "amount"}]
-    [:br]
-    [:div "Date"]
-    [:input {:type "date"
-             :id "due-date"}]]
-   [:button {:type "button"
-             :on-click (fn [e] (prn ":(")
-                         (re-frame/dispatch [:send {:amount (-> (.getElementById js/document "amount") .-value)
-                                                    :date (-> (.getElementById js/document "due-date") .-value)}]))}
-    "Add"]
-   [:button {:on-click #(re-frame/dispatch-sync [:update-page :landing-page])
-             :type "button"}
-    "back"]])
+  (let [current-user (re-frame/subscribe [:current-user])]
+    [:div
+     [:form
+      [:div "Add Bill"]
+      [:br]
+      [:div "Amount"]
+      [:input {:type "number"
+               :id "amount"}]
+      [:br]
+      [:div "Bill type"]
+      [:input {:type "text"
+               :id "bill-name"}]
+      [:br]
+      [:div "Date"]
+      [:input {:type "date"
+               :id "due-date"}]]
+     [:button {:type "button"
+               :on-click (fn [e] (prn ":(")
+                           (re-frame/dispatch [:send {:owner @current-user
+                                                      :name (get-by-id "bill-name")
+                                                      :amount (get-by-id "amount")
+                                                      :date (get-by-id "due-date")}]))}
+      "Add"]
+     (back-button)]))
 
 (defn login
   []
   [:div
    [:div "Welcome!"]
    [:form
-    "Username"
+    [:div "Username"]
     [:input {:type "text"
              :name "user"
              :on-change (fn [e] (re-frame/dispatch-sync [:input (-> e .-currentTarget .-value)]))}]]
@@ -58,6 +77,29 @@
     {:on-click (fn [e]
                  (re-frame/dispatch [:login]))}
     "Submit"]])
+
+(defn error
+  []
+  [:div
+   [:div "something went wrong"]
+   (back-button)])
+
+(defn add-user
+  []
+  [:div
+   [:div "Add user"]
+   [:form [:input {:type "text"
+                   :id "new-user"}]]
+   [:button {:type "button"
+             :on-click #(re-frame/dispatch [:add-user (get-by-id "new-user")])}
+    "submit"]])
+
+(defn users
+  []
+  (let [all-users (re-frame/subscribe [:users])]
+    [:div
+     (add-user)
+     (back-button)]))
 
 (defn main-panel
   []
@@ -67,5 +109,6 @@
       (case @page
         :enter-bills (enter-bills)
         :landing-page (landing-page)
-        (login))
+        :users (users)
+        (error))
       (login))))
