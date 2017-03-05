@@ -39,7 +39,8 @@
 
 (defn enter-bills
   []
-  (let [current-user (re-frame/subscribe [:current-user])]
+  (let [current-user (re-frame/subscribe [:current-user])
+        house (re-frame/subscribe [:house])]
     [:div
      [:form
       [:div "Add Bill"]
@@ -59,6 +60,7 @@
                :on-click (fn [e] (prn ":(")
                            (re-frame/dispatch [:send ["bill" {:action "create"
                                                               :owner @current-user
+                                                              :house @house
                                                               :name (get-by-id "bill-name")
                                                               :amount (get-by-id "amount")
                                                               :date (get-by-id "due-date")}]]))}
@@ -87,18 +89,21 @@
 
 (defn add-user
   []
-  [:div
-   [:div "Add user"]
-   [:form [:input {:type "text"
-                   :id "new-user"}]]
-   [:button {:type "button"
-             :on-click #(re-frame/dispatch [:add-user (get-by-id "new-user")])}
-    "submit"]])
+  (let [house (re-frame/subscribe [:house])]
+    [:div
+     [:div "Add user"]
+     [:form [:input {:type "text"
+                     :id "new-user"}]]
+     [:button {:type "button"
+               :on-click #(re-frame/dispatch [:send ["user" {:action "create"
+                                                             :name (get-by-id "new-user")}]] #_[:add-user (get-by-id "new-user")])}
+      "submit"]]))
 
 (defn users
   []
   (let [all-users (re-frame/subscribe [:users])]
     [:div
+     [:ul (map #(conj [:li] %) @all-users)]
      (add-user)
      (back-button)]))
 

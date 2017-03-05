@@ -14,6 +14,11 @@
    (:bills db)))
 
 (re-frame/reg-sub
+ :house
+ (fn [db]
+   (:house db)))
+
+(re-frame/reg-sub
  :users
  (fn [db]
    (:users db)))

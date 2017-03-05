@@ -43,7 +43,7 @@
    (prn "GOT A RESPONSE: " type (js->clj r))
    (case type
      :bill (update db :bills #(conj % (fake-resp-1)))
-     :user (update db :users #(conj % (fake-resp-2)))
+     :user (update db :users #(set (conj % (fake-resp-2))))
      (assoc db :current-page :error))))
 
 (re-frame/reg-event-db
