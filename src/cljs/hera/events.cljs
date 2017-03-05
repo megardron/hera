@@ -12,18 +12,18 @@
 
 (re-frame/reg-event-db
  :send
- (fn [db [_ params]]
+ (fn [db [_ [type params]]]
    (prn "ME")
-   (GET "http://172.17.113.125:8080" {:params params
-                                      :headers {:accept "application/json"}
-                                      :handler #(do (prn %) (re-frame/dispatch-sync [:resp %]))})
-   (re-frame/dispatch [:resp "lol"])
+   (GET (str "http://172.17.113.125:8080/" type) {:params params
+                                                  :headers {:accept "application/json"}
+                                                  :handler #(do (prn %) (re-frame/dispatch-sync [:resp [(keyword type) %]]))})
+   (re-frame/dispatch [:resp [(keyword type) "lol"]])
    (prn db params config/url)
    db))
 
 (def a (atom 0))
 
-(defn fake-resp
+(defn fake-resp-1
   []
   (prn "creating a fake response")
   {:id (swap! a inc)
@@ -33,11 +33,18 @@
    :date "2017-03-04"
    :owner "me"})
 
+(defn fake-resp-2
+  []
+  "word")
+
 (re-frame/reg-event-db
  :resp
- (fn [db [_ b]]
-   (prn "GOT A RESPONSE: " (js->clj b))
-   (update db :bills #(conj % (fake-resp)))))
+ (fn [db [_ [type r]]]
+   (prn "GOT A RESPONSE: " type (js->clj r))
+   (case type
+     :bill (update db :bills #(conj % (fake-resp-1)))
+     :user (update db :users #(conj % (fake-resp-2)))
+     (assoc db :current-page :error))))
 
 (re-frame/reg-event-db
  :input

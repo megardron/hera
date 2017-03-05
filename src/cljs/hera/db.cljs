@@ -3,6 +3,7 @@
 (def default-db
 
   {:current-user "me"
+   :house 1
    :bills []
    :current-page :enter-bills
    :users ["Nolan"

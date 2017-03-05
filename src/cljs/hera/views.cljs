@@ -57,10 +57,11 @@
                :id "due-date"}]]
      [:button {:type "button"
                :on-click (fn [e] (prn ":(")
-                           (re-frame/dispatch [:send {:owner @current-user
-                                                      :name (get-by-id "bill-name")
-                                                      :amount (get-by-id "amount")
-                                                      :date (get-by-id "due-date")}]))}
+                           (re-frame/dispatch [:send ["bill" {:action "create"
+                                                              :owner @current-user
+                                                              :name (get-by-id "bill-name")
+                                                              :amount (get-by-id "amount")
+                                                              :date (get-by-id "due-date")}]]))}
       "Add"]
      (back-button)]))
 
