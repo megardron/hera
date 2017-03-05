@@ -1,5 +1,6 @@
 (ns hera.views
-  (:require [re-frame.core :as re-frame]))
+  (:require [re-frame.core :as re-frame]
+            [ajax.core :refer [GET]]))
 
 
 (defn user-dropdown
@@ -19,12 +20,30 @@
                :type "button"}
       "Add bills" ]
      [:button {:type "button"
-               :on-click (fn [e] (prn "click logout") (re-frame/dispatch-sync [:logout ":("]))}
+               :on-click (fn [e] (prn "click logout") (re-frame/dispatch-sync [:logout]))}
       "Logout"]]))
 
 (defn enter-bills
   []
-  [:div "lol"])
+  [:div
+   [:form
+    [:div "Add Bill"]
+    [:br]
+    [:div "Amount"]
+    [:input {:type "number"
+             :id "amount"}]
+    [:br]
+    [:div "Date"]
+    [:input {:type "date"
+             :id "due-date"}]]
+   [:button {:type "button"
+             :on-click (fn [e] (prn ":(")
+                         (re-frame/dispatch [:send [(-> (.getElementById js/document "amount") .-value)
+                                                    (-> (.getElementById js/document "due-date") .-value)]]))}
+    "Add"]
+   [:button {:on-click #(re-frame/dispatch-sync [:update-page :landing-page])
+             :type "button"}
+    "back"]])
 
 (defn login
   []
@@ -42,11 +61,11 @@
 
 (defn main-panel
   []
-  (let [logged-in? (re-frame/subscribe [:current-user])
+  (let [current-user (re-frame/subscribe [:current-user])
         page (re-frame/subscribe [:current-page])]
-    (prn @logged-in? @page)
-    (if @logged-in?
+    (if @current-user
       (case @page
         :enter-bills (enter-bills)
-        :login (landing-page))
+        :landing-page (landing-page)
+        (login))
       (login))))
