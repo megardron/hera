@@ -85,14 +85,34 @@
     "Submit"]])
 
 (defn format-bill
-  [bill]
-  (str (:name bill) (:id bill)))
+  [people bill]
+  [:tr
+   [:td (:name bill)]
+   [:td (:owner bill)]
+   [:td (:amount bill)]
+   [:td (.toFixed (/ (:amount bill) people) 2)]
+   [:td (:date bill)]
+   [:td (str (:paid bill))]])
+
+(defn bill-table
+  [bills people]
+  [:table
+   [:tbody
+    [:tr
+     [:th "Bill"]
+     [:th "Owner"]
+     [:th "Amount"]
+     [:th "I owe"]
+     [:th "Due Date"]
+     [:th "Paid?"]]
+    (map (partial format-bill people) bills)]])
 
 (defn view-bills
   []
-  (let [bills (re-frame/subscribe [:bills])]
+  (let [bills (re-frame/subscribe [:bills])
+        people (count (deref (re-frame/subscribe [:users])))]
     [:div (if (seq @bills)
-            [:ul (map #(conj [:li] (format-bill %)) @bills)]
+            (bill-table @bills people)
             [:div
              [:div "No bills. Would you like to add one now?"]
              [:button {:on-click #(re-frame/dispatch-sync [:update-page :enter-bills])
@@ -115,26 +135,43 @@
                      :id "new-user"}]]
      [:button {:type "button"
                :on-click #(re-frame/dispatch [:send ["user" {:action "create"
-                                                             :name (get-by-id "new-user")}]] #_[:add-user (get-by-id "new-user")])}
+                                                             :name (get-by-id "new-user")}]])}
       "submit"]]))
 
 (defn users
   []
   (let [all-users (re-frame/subscribe [:users])]
     [:div
-     [:ul (map #(conj [:li] %) @all-users)]
-     (add-user)
-     (back-button)]))
+     [:form [:input {:type "text"
+                     :id "new-user"}]]
+     [:button {:type "button"
+               :on-click #(re-frame/dispatch [:send ["user" {:action "create"
+                                                             :name (get-by-id "new-user")}]])}
+      "submit"]]))
+
+(defn create-house
+  []
+  [:div
+   [:div "Welcome new user! Enter your name below to begin."]
+   [:input {:type "text"
+            :id "new-user"}]
+   [:button {:type "button"
+             :on-click #(re-frame/dispatch [:send ["house" {:action "create"
+                                                            :name (get-by-id "new-user")}]])}
+    "submit"]])
 
 (defn main-panel
   []
+  #_(re-frame/dispatch [:fetch])
   (let [current-user (re-frame/subscribe [:current-user])
-        page (re-frame/subscribe [:current-page])]
-    (if @current-user
-      (case @page
-        :enter-bills (enter-bills)
-        :landing-page (landing-page)
-        :view-bills (view-bills)
-        :users (users)
-        (error))
-      (login))))
+        page (re-frame/subscribe [:current-page])
+        house (re-frame/subscribe [:house])]
+    (cond (and @current-user @house)
+          (case @page
+            :enter-bills (enter-bills)
+            :landing-page (landing-page)
+            :view-bills (view-bills)
+            :users (users)
+            (error))
+          @house (login)
+          :else (create-house))))

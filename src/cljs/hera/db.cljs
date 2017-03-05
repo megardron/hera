@@ -1,9 +1,8 @@
 (ns hera.db)
 
 (def default-db
-
   {:current-user "me"
-   :house 1
+   :house nil
    :bills []
    :current-page :enter-bills
    :users ["Nolan"
