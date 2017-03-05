@@ -4,20 +4,25 @@
             [hera.config :as config]
             [ajax.core :refer [GET]]))
 
+(defn parse
+  [s]
+  (cljs.reader/read-string s))
+
 (re-frame/reg-event-db
  :initialize-db
  (fn  [_ _]
-   db/default-db))
+   (-> db/default-db
+       (assoc , :houses (map :id (parse (GET (str "http://172.17.113.125:8080/house") {:headers {:accept "application/json"}
+                                                                                       :handler #(do (prn %) (re-frame/dispatch-sync [:resp [(keyword type) %]]))}))))
+       (update , :house #(first (:houses %))))))
 
 
 (re-frame/reg-event-db
  :send
  (fn [db [_ [type params]]]
-   (prn "ME")
    (GET (str "http://172.17.113.125:8080/" type) {:params params
                                                   :headers {:accept "application/json"}
                                                   :handler #(do (prn %) (re-frame/dispatch-sync [:resp [(keyword type) %]]))})
-   (re-frame/dispatch [:resp [(keyword type) "lol"]])
    (prn db params config/url)
    db))
 
@@ -44,6 +49,7 @@
    (case type
      :bill (update db :bills #(conj % (fake-resp-1)))
      :user (update db :users #(set (conj % (fake-resp-2))))
+     :house (assoc db :house 1)
      (assoc db :current-page :error))))
 
 (re-frame/reg-event-db

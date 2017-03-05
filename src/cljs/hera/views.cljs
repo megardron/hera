@@ -152,10 +152,11 @@
 (defn create-house
   []
   [:div
-   [:div "Welcome new user! Enter your name below to begin."]
+   [:div {:className "test-main"} "Welcome new user! Enter your name below to begin."]
    [:input {:type "text"
             :id "new-user"}]
-   [:button {:type "button"
+   [:button {:type "submit"
+             :className "button-test"
              :on-click #(re-frame/dispatch [:send ["house" {:action "create"
                                                             :name (get-by-id "new-user")}]])}
     "submit"]])
