@@ -12,11 +12,19 @@
 
 (re-frame/reg-event-db
  :send
- (fn [db [_ b]]
+ (fn [db [_ params]]
    (prn "ME")
-   (GET "http://172.17.113.125:8080")
-   (prn db b config/url)
+   (GET "http://172.17.113.125:8080" {:params params
+                                      :headers {:accept "application/json"}
+                                      :handlers #(re-frame/dispatch [:rs %])})
+   (prn db params config/url)
    db))
+
+(re-frame/reg-event-db
+ :rs
+ (fn [db [_ b]]
+   (prn db b)
+   (assoc db :yes :true)))
 
 (re-frame/reg-event-db
  :input

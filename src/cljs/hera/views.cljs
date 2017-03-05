@@ -38,8 +38,8 @@
              :id "due-date"}]]
    [:button {:type "button"
              :on-click (fn [e] (prn ":(")
-                         (re-frame/dispatch [:send [(-> (.getElementById js/document "amount") .-value)
-                                                    (-> (.getElementById js/document "due-date") .-value)]]))}
+                         (re-frame/dispatch [:send {:amount (-> (.getElementById js/document "amount") .-value)
+                                                    :date (-> (.getElementById js/document "due-date") .-value)}]))}
     "Add"]
    [:button {:on-click #(re-frame/dispatch-sync [:update-page :landing-page])
              :type "button"}
